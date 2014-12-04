@@ -31,12 +31,12 @@ shinyServer(
     
     ### design==binary -> input 
     # Binary data type
-    output$mode1<-renderUI({
+    output$mode_bin<-renderUI({
       validate(need(input$type_binary != 0, ""))
       if(input$data_type==1){
         if (input$type_binary==0){
           HTML("<font color=CE0000><i>Note:please choose a study design !</i></font>")
-        }else if (input$type_binary==1){
+          }else if (input$type_binary==1){
           list(
           numericInput("alpha", label = HTML("<b>Type I error (&alpha;)</b>"),
                          value = 0.05,step=0.01,max=1,min=0),br(),br(),
@@ -47,41 +47,67 @@ shinyServer(
           numericInput("power",label = HTML("<b>Power (1-&beta;)</b>"),
                        value = 0.9,step=0.05,max=1,min=0)
           )
-          }else if (input$type_binary==4){
-          list(
-          numericInput("alpha", label = HTML("<b>Type I error (&alpha;)</b>"),
+          }else if (input$type_binary==2){
+            list(
+            numericInput("alpha", label = HTML("<b>Type I error (&alpha;)</b>"),
                          value = 0.05,step=0.01,max=1,min=0),br(),br(),
-          numericInput("p1",label =HTML("<b><big>&theta;<sub>1</sub></big></b>"),
-                       value = 0.6,step=0.001,max=1,min=0),
-          numericInput("p2",label =HTML("<b><big>&theta;<sub>2</sub></big></b>"),
-                       value = 0.8,step=0.001,max=1,min=0),br(),br(),
-          numericInput("power",label = HTML("<b>Power (1-&beta;)</b>"),
-                       value = 0.9,step=0.05,max=1,min=0),
-          numericInput("ratio",label =HTML("<b>r (n<sub>2</sub>/n<sub>1</sub>)</b>"),
-                       value = 1.0,step=0.1,max=10,min=0.1) 
+            numericInput("p0",label =HTML("<b><big>&theta;<sub>0</sub></big></b>"),
+                         value = 0.8,step=0.001,max=1,min=0),
+            numericInput("p",label =HTML("<b><big>&theta;</big></b>"),
+                         value = 0.6,step=0.001,max=1,min=0),
+            numericInput("dif",label =HTML("<b><big>d </big></b>"),
+                         value = -0.1,step=0.001,max=1,min=-1),br(),br(),
+            numericInput("power",label = HTML("<b>Power (1-&beta;)</b>"),
+                         value = 0.9,step=0.05,max=1,min=0),
+            numericInput("ratio",label =HTML("<b><big>r </big>(n<sub>2</sub>/n<sub>1</sub>)</b>"),
+                         value = 1.0,step=0.1,max=10,min=0.1) 
+            )
+            
+          }else if (input$type_binary==4){
+            list(
+            numericInput("alpha", label = HTML("<b>Type I error (&alpha;)</b>"),
+                        value = 0.05,step=0.01,max=1,min=0),br(),br(),
+            numericInput("p1",label =HTML("<b><big>&theta;<sub>1</sub></big></b>"),
+                        value = 0.6,step=0.001,max=1,min=0),
+            numericInput("p2",label =HTML("<b><big>&theta;<sub>2</sub></big></b>"),
+                        value = 0.8,step=0.001,max=1,min=0),br(),br(),
+            numericInput("power",label = HTML("<b>Power (1-&beta;)</b>"),
+                        value = 0.9,step=0.05,max=1,min=0),
+            numericInput("ratio",label =HTML("<b><big>r </big>(n<sub>2</sub>/n<sub>1</sub>)</b>"),
+                        value = 1.0,step=0.1,max=10,min=0.1) 
           )
+        }else if (input$type_binary==5){
+          list(
+            numericInput("alpha", label = HTML("<b>Type I error (&alpha;)</b>"),
+                         value = 0.05,step=0.01,max=1,min=0),br(),br(),
+            numericInput("p1",label =HTML("<b><big>&theta;<sub>1</sub></big></b>"),
+                         value = 0.6,step=0.001,max=1,min=0),
+            numericInput("p2",label =HTML("<b><big>&theta;<sub>2</sub></big></b>"),
+                         value = 0.8,step=0.001,max=1,min=0),
+            numericInput("dif",label =HTML("<b><big>d </big></b>"),
+                         value = -0.1,step=0.001,max=1,min=-1),br(),br(),
+            numericInput("power",label = HTML("<b>Power (1-&beta;)</b>"),
+                         value = 0.9,step=0.05,max=1,min=0),
+            numericInput("ratio",label =HTML("<b><big>r </big>(n<sub>2</sub>/n<sub>1</sub>)</b>"),
+                         value = 1.0,step=0.1,max=10,min=0.1) 
+          ) 
         }
       }
     })
-    # var assumption
+    # binary 2-sample equal-var assumption
     output$mode_var<-renderUI({
       validate(need(input$type_binary!=0 , ""))
       if(input$data_type==1){
         # choose "Two Sample - Test for Equality"
         if (input$type_binary==4){
-          selectInput("var_type",label = HTML("<b>Variance Assumption</b>"),selected = 1,
-                      choices =list("---Please select---"=0,"Unequal variance(Default)"=1,"Equal variance"=2) )   
-        }
+          selectInput("var_type",label = HTML("<b>Variance Assumption</b>"),selected = 1,width = '300px',
+                      choices =list("Different variances (Default)"=1,"Same variances"=2) )   
+        }else if(input$type_binary==5){
+          
+          
+        } 
       } 
-    })
-   
-    # submit button
-    output$run<-renderUI({
-      validate(need(input$type_binary != 0, ""))
-      if(input$type_binary!=0){
-        submitButton("run")
-      }
-    })
+    })   
     
     ### output 
     output$sam_bin <- renderUI({
@@ -94,31 +120,42 @@ shinyServer(
         }else if (input$type_binary==1){ # 1 sample test for equality
           temp1_n<-((qnorm(input$alpha/2)+qnorm(1-input$power))^2)*input$t1*(1-input$t1)/(input$t1-input$t2)^2
           HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; N  = "),ceiling(temp1_n),"</big></font>")
+        }else if (input$type_binary==2){ # 1 sample test for non-inferiority/superior
+          temp2_n<- ((qnorm(input$alpha)+qnorm(1-input$power))^2)*(input$p*(1-input$p))/((input$p-input$p0)-input$dif)^2
+          list(
+            HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; N  = "),ceiling(temp2_n),"</big></font>")
+          )
+          
         }else if (input$type_binary==4){ # 2 sample test for equality
           validate(need(input$var_type != 0, "----------------------------------"))
           if(input$var_type==1){ # Unequal variance(Default)
             p_pool<-(input$p1+(input$p2*input$ratio))/(input$ratio+1)
-            temp2_n1<-((qnorm(input$alpha/2)*sqrt((1+input$ratio)*p_pool*(1-p_pool)/input$ratio))+(qnorm(1-input$power)*sqrt(input$ratio*input$p1*(1-input$p1)+input$p2*(1-input$p2))))^2/(input$p1-input$p2)^2
+            temp42_n1<-((qnorm(input$alpha/2)*sqrt((1+input$ratio)*p_pool*(1-p_pool)/input$ratio))+(qnorm(1-input$power)*sqrt(input$ratio*input$p1*(1-input$p1)+input$p2*(1-input$p2))))^2/(input$p1-input$p2)^2
             list(
-              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>1 </sub>="),ceiling(temp2_n1),"</big></font>"),br(),br(),
-              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>2 </sub>="),ceiling(temp2_n1*input$ratio),"</big></font>"),br(),br(),
-              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; N  = "),ceiling(temp2_n1*input$ratio)+ceiling(temp2_n1),"</big></font>")
+              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>1 </sub>="),ceiling(temp42_n1),"</big></font>"),br(),br(),
+              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>2 </sub>="),ceiling(temp42_n1*input$ratio),"</big></font>"),br(),br(),
+              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; N  = "),ceiling(temp42_n1*input$ratio)+ceiling(temp42_n1),"</big></font>")
             )
             }else if (input$var_type==2){ # Equal variance
             p_pool<-(input$p1+(input$p2*input$ratio))/(input$ratio+1)
-            temp3_n1<- ((qnorm(input$alpha/2)+qnorm(1-input$power))^2)*((input$ratio+1)*p_pool*(1-p_pool)/input$ratio)/(input$p1-input$p2)^2
+            temp43_n1<- ((qnorm(input$alpha/2)+qnorm(1-input$power))^2)*((input$ratio+1)*p_pool*(1-p_pool)/input$ratio)/(input$p1-input$p2)^2
             list(
-              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>1 </sub>="),ceiling(temp3_n1),"</big></font>"),br(),br(),
-              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>2 </sub>="),ceiling(temp3_n1*input$ratio),"</big></font>"),br(),br(),
-              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; N  = "),ceiling(temp3_n1*input$ratio)+ceiling(temp3_n1),"</big></font>")
+              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>1 </sub>="),ceiling(temp43_n1),"</big></font>"),br(),br(),
+              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>2 </sub>="),ceiling(temp43_n1*input$ratio),"</big></font>"),br(),br(),
+              HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; N  = "),ceiling(temp43_n1*input$ratio)+ceiling(temp43_n1),"</big></font>")
             )
           }     
+        }else if (input$type_binary==5){ # 2 sample test for non-inferiority/superior
+          temp5_n1<- ((qnorm(input$alpha)+qnorm(1-input$power))^2)*(input$p1*(1-input$p1)+input$p2*(1-input$p2))/((input$p1-input$p2)-input$dif)^2
+          list(
+            HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>1 </sub>="),ceiling(temp5_n1),"</big></font>"),br(),br(),
+            HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>2 </sub>="),ceiling(temp5_n1),"</big></font>"),br(),br(),
+            HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; N  = "),ceiling(temp5_n1)+ceiling(temp5_n1),"</big></font>")
+          )
         }
       }
     })
-    
-    
-    
+       
     ### info
     output$img_prop_def<-renderUI({
       validate(need(input$type_binary!=0 , ""))
@@ -126,12 +163,12 @@ shinyServer(
         if (input$type_binary==4){
           validate(need(input$var_type != 0, ""))
           if (input$var_type==1){
-            tags$img(src="https://dl-web.dropbox.com/get/samplesize/formula_prop_def.png?_subject_uid=71521442&w=AAAglPwiWTJ17G3Oydk8U5jaOg02ltvJ5YvGr8F0vcCxOw", height = 800, width = 700)   
+            tags$img(src="formula_prop_def.png", height = 800, width = 700)   
           }else if (input$var_type==2)  {
-            tags$img(src="https://dl-web.dropbox.com/get/samplesize/formula_prop_equal.png?_subject_uid=71521442&w=AABJ7_JMKRXxJehiNZOLLoCOvf2DzFhJljx9MogeJzK2ig", height = 800, width = 700) 
+            tags$img(src="formula_prop_equal.png", height = 800, width = 700) 
           }
         }else if(input$type_binary==1){
-          tags$img(src="https://dl-web.dropbox.com/get/samplesize/formula_prop_1.png?_subject_uid=71521442&w=AAA14x_kJ2tjQH9GM05LX0_HhC-F6ZFF6hmu_MiD1WfxGQ", height = 800, width = 700) 
+          tags$img(src="formula_prop_1.png", height = 800, width = 700) 
         }
       }    
     })
