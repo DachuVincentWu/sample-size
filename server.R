@@ -131,7 +131,7 @@ shinyServer(
             tags$img(src="formula_prop_equal.png", height = 800, width = 700) 
           }
         }else if(input$type_binary==1){
-          tags$img(src="formula_prop_1.png", height = 800, width = 700) 
+          tags$img(src="https://dl-web.dropbox.com/get/samplesize/formula_prop_1.png?_subject_uid=71521442&w=AAA14x_kJ2tjQH9GM05LX0_HhC-F6ZFF6hmu_MiD1WfxGQ", height = 800, width = 700) 
         }
       }    
     })
