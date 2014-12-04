@@ -126,9 +126,9 @@ shinyServer(
         if (input$type_binary==4){
           validate(need(input$var_type != 0, ""))
           if (input$var_type==1){
-            tags$img(src="formula_prop_def.png", height = 800, width = 700)   
+            tags$img(src="https://dl-web.dropbox.com/get/samplesize/formula_prop_def.png?_subject_uid=71521442&w=AAAglPwiWTJ17G3Oydk8U5jaOg02ltvJ5YvGr8F0vcCxOw", height = 800, width = 700)   
           }else if (input$var_type==2)  {
-            tags$img(src="formula_prop_equal.png", height = 800, width = 700) 
+            tags$img(src="https://dl-web.dropbox.com/get/samplesize/formula_prop_equal.png?_subject_uid=71521442&w=AABJ7_JMKRXxJehiNZOLLoCOvf2DzFhJljx9MogeJzK2ig", height = 800, width = 700) 
           }
         }else if(input$type_binary==1){
           tags$img(src="https://dl-web.dropbox.com/get/samplesize/formula_prop_1.png?_subject_uid=71521442&w=AAA14x_kJ2tjQH9GM05LX0_HhC-F6ZFF6hmu_MiD1WfxGQ", height = 800, width = 700) 
