@@ -174,7 +174,7 @@ shinyServer(
         }else if(input$type_binary==2){
           tags$img(src="https://www.dropbox.com/s/55ywvg6x2ke663q/info_binary_1_super.pdf?dl=0", height = 800, width = 700) 
         }else if(input$type_binary==1){
-          tags$img(src="https://docs.google.com/file/d/0B2HEMw1LK8yqcXV4cEh6bzJZZlE/edit", height = 800, width = 700) 
+          tags$img(src="https://dl-web.dropbox.com/get/samplesize/info_binary_1_equal.png?_subject_uid=71521442&w=AAAD2dy0TLgdDeDqqnMkm_rzfYHAIBZdIh42hgG_zWV13g", height = 800, width = 700) 
         }
       }    
     })
