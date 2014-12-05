@@ -138,7 +138,7 @@ shinyServer(
             )
             }else if (input$var_type==2){ # Equal variance
             p_pool<-(input$p1+(input$p2*input$ratio))/(input$ratio+1)
-            temp43_n1<- ((qnorm(input$alpha/2)+qnorm(1-input$power))^2)*((input$ratio+1)*p_pool*(1-p_pool)/input$ratio)/(input$p1-input$p2)^2
+            temp43_n1<-((qnorm(input$alpha/2)+qnorm(1-input$power))^2)*((input$ratio+1)*p_pool*(1-p_pool)/input$ratio)/(input$p1-input$p2)^2
             list(
               HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>1 </sub>="),ceiling(temp43_n1),"</big></font>"),br(),br(),
               HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>2 </sub>="),ceiling(temp43_n1*input$ratio),"</big></font>"),br(),br(),
@@ -146,7 +146,7 @@ shinyServer(
             )
           }     
         }else if (input$type_binary==5){ # 2 sample test for non-inferiority/superior
-          temp5_n1<- ((qnorm(input$alpha)+qnorm(1-input$power))^2)*(input$p1*(1-input$p1)+input$p2*(1-input$p2))/((input$p1-input$p2)-input$dif)^2
+          temp5_n1<-((qnorm(input$alpha)+qnorm(1-input$power))^2)*(input$p1*(1-input$p1)+input$p2*(1-input$p2))/((input$p1-input$p2)-input$dif)^2
           list(
             HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>1 </sub>="),ceiling(temp5_n1),"</big></font>"),br(),br(),
             HTML(("<font color=2F0000 size=3.5 face=arial><big>&#8594; n<sub>2 </sub>="),ceiling(temp5_n1),"</big></font>"),br(),br(),
@@ -163,16 +163,20 @@ shinyServer(
         if (input$type_binary==4){
           validate(need(input$var_type != 0, ""))
           if (input$var_type==1){
-            tags$img(src="formula_prop_def.png", height = 800, width = 700)   
+            tags$img(src="https://www.dropbox.com/s/n9xts6sf7jj484t/info_binary_2_equal_1.pdf?dl=0", height = 800, width = 700)   
           }else if (input$var_type==2)  {
-            tags$img(src="formula_prop_equal.png", height = 800, width = 700) 
+            tags$img(src="https://www.dropbox.com/s/vd268efxyqf55f9/info_binary_2_equal_2.pdf?dl=0", height = 800, width = 700) 
           }
+        }else if(input$type_binary==5){
+          tags$img(src="https://www.dropbox.com/s/oll0kz7gvp9c9h2/info_binary_2_super.pdf?dl=0", height = 800, width = 700) 
+        }else if(input$type_binary==3){
+          
+        }else if(input$type_binary==2){
+          tags$img(src="https://www.dropbox.com/s/55ywvg6x2ke663q/info_binary_1_super.pdf?dl=0", height = 800, width = 700) 
         }else if(input$type_binary==1){
-          tags$img(src="formula_prop_1.png", height = 800, width = 700) 
+          tags$img(src="https://www.dropbox.com/s/iozkwqp9tc3isij/info_binary_1_equal.pdf?dl=0", height = 800, width = 700) 
         }
       }    
     })
-    
-   
   }
 )
