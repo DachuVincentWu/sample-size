@@ -2,44 +2,44 @@
 library(shiny)
 library(htmltools) 
 
-shinyUI(fluidPage(
+shinyUI(fixedPage(
   
   titlePanel("Sample Size Calculator"),
   
-  sidebarLayout(fluid = T,
-    sidebarPanel(width = 5,
+  sidebarLayout(fluid = F,
+    sidebarPanel(width = 6,
       radioButtons("data_type",label=HTML("<font color=003D79><big>Data Type</big></font>"),selected = 0,
                    choices = list("Binary"=1,"Quantitative"=2,"Survival"=3,"Ordinal"=4)),
-                 
-      #selectInput("data_type",label=h5("Data Type"),,width = '400px',choices = list("---Please Select---"=0,"Binary"=1,"Quantitative"=2,"Survival"=3,"Ordinal"=4)),
       uiOutput("design"),
       tags$hr(),
-      HTML("<font color=003D79><big>Result</big></font>"),
-      br(),br(),
+      HTML("<font color=003D79><big><b>Result</b></big></font>"),
+      br(),
       uiOutput("sam_bin"),
+      uiOutput("sam_surv"),   ##ps
       br(),tags$hr()
-  
+      
     ),
     
     mainPanel(width = 6,
       #tags$style(type="text/css",
       #          ".shiny-output-error { visibility: hidden; }",
       #         ".shiny-output-error:before { visibility: hidden; }"),
-      tabsetPanel(
+      tabsetPanel(type = 'tabs',
       tabPanel("Parameters",
-        uiOutput("mode_bin"),br(),
-        uiOutput("mode_var"),
-        tags$hr()
-        #uiOutput("run"),
+        br(),
+        ### binary
+        uiOutput("mode_bin"),uiOutput("mode_quant"),
+        ### survival
+        uiOutput("mod_surv_prop"),uiOutput("mod_surv_dist"),uiOutput("choice_alpha"),
+        uiOutput("mode_surv")
             ),
       tabPanel("Manual",
-        uiOutput("img_prop_def"),br(),
-        tags$hr()
+        br(),
+        uiOutput("bin_def"),uiOutput("quant_def"),
+        uiOutput("surv_def")
                )
       )
     )    
   )
   
 ))
-
-
