@@ -52,7 +52,7 @@ shinyServer(
             list(
             numericInput("alpha", label = HTML("<b>Type I error (&alpha;)</b>"),
                          value = 0.05,step=0.01,max=1,min=0),
-            numericInput("p0",label =HTML("<b><big>&theta;<sub>0</sub></big></b>"),
+            numericInput("p0",label =HTML("<b><big>&theta;<sub>0</sub></big></b><small><br>(Known success proportion)</small>"),
                          value = 0.8,step=0.001,max=1,min=0),
             numericInput("p",label =HTML("<b><big>&theta;</big></b>"),
                          value = 0.6,step=0.001,max=1,min=0),
@@ -68,12 +68,12 @@ shinyServer(
             list(
               numericInput("alpha", label = HTML("<b>Type I error (&alpha;)</b>"),
                            value = 0.05,step=0.01,max=1,min=0),
-              numericInput("p0",label =HTML("<b><big>&theta;<sub>0</sub></big></b>"),
+              numericInput("p0",label =HTML("<b><big>&theta;<sub>0</sub></big></b><small><br>(Known success proportion)</small>"),
                            value = 0.8,step=0.001,max=1,min=0),
               numericInput("p",label =HTML("<b><big>&theta;</big></b>"),
                            value = 0.6,step=0.001,max=1,min=0),
               numericInput("eq_limit",label =HTML("<b><big>&delta;</big></b>"),
-                           value = 0.1,step=0.001,max=1,min=-1),
+                           value = 0.1,step=0.001,max=1,min=0),
               numericInput("power",label = HTML("<b>Power (1-&beta;)</b>"),
                            value = 0.9,step=0.05,max=1,min=0),
               hr()
@@ -105,7 +105,7 @@ shinyServer(
             numericInput("p2",label =HTML("<b><big>&theta;<sub>2</sub></big></b>"),
                          value = 0.8,step=0.001,max=1,min=0),
             numericInput("dif",label =HTML("<b><big>&delta;</big></b>"),
-                         value = -0.1,step=0.001,max=1,min=-1),
+                         value = 0.1,step=0.001,max=1,min=-1),
             numericInput("power",label = HTML("<b>Power (1-&beta;)</b>"),
                          value = 0.9,step=0.05,max=1,min=0),
             numericInput("ratio",label =HTML("<b><big>r </big>(n<sub>2</sub>/n<sub>1</sub>)</b>"),
@@ -142,17 +142,18 @@ shinyServer(
               (".</font></P></PRE>") )
         } 
         else if (input$type_binary==2){ # 1 sample test for non-inferiority/superior
-        temp2_n<- ((qnorm(input$alpha)+qnorm(1-input$power))^2)*(input$p*(1-input$p))/((input$p-input$p0)-input$dif)^2
+        temp2_n<- ((qnorm(1-input$alpha)+qnorm(input$power))^2)*(input$p*(1-input$p))/((input$p-input$p0)-input$dif)^2
         HTML( ("<P><PRE><font color=#000000 size=3 face=Times New Roman>&#8594; N  = "),ceiling(temp2_n),
               (".</font></P></PRE>") )
         } 
         else if (input$type_binary==3){
-          HTML( ("<P><PRE><font color=#000000 size=3 face=Times New Roman>&#8594; N  = "),
+          temp3_n<-((qnorm(1-input$alpha)+qnorm(0.5+input$power/2))^2)*input$p*(1-input$p)/(input$eq_limit-abs(input$p-input$p0))^2
+          HTML( ("<P><PRE><font color=#000000 size=3 face=Times New Roman>&#8594; N  = "),ceiling(temp3_n),
                 (".</font></P></PRE>") )
         }
         else if (input$type_binary==4){ # 2 sample test for equality
-          validate(need(input$var_type != 0, "----------------------------------"))
-          if(input$var_type==1){ # Unequal variance(Default)
+          validate(need(input$var_type != 0, " "))
+          if(input$var_type==1) { # Unequal variance(Default)
           p_pool<-(input$p1+(input$p2*input$ratio))/(input$ratio+1)
           temp42_n1<-((qnorm(input$alpha/2)*sqrt((1+input$ratio)*p_pool*(1-p_pool)/input$ratio))+(qnorm(1-input$power)*sqrt(input$ratio*input$p1*(1-input$p1)+input$p2*(1-input$p2))))^2/(input$p1-input$p2)^2
           HTML( ("<P><PRE><font color=#000000 size=3 face=Times New Roman>&#8594; N  = "),ceiling(temp42_n1*input$ratio)+ceiling(temp42_n1),
@@ -170,12 +171,24 @@ shinyServer(
           }     
     } 
         else if (input$type_binary==5){ # 2 sample test for non-inferiority/superior
-          temp5_n1<-((qnorm(input$alpha)+qnorm(1-input$power))^2)*(input$p1*(1-input$p1)+input$p2*(1-input$p2))/((input$p1-input$p2)-input$dif)^2
-          HTML( ("<P><PRE><font color=#000000 size=3 face=Times New Roman>&#8594; N  = "),ceiling(temp5_n1)+ceiling(temp5_n1),
+          temp5_n2<-((qnorm(1-input$alpha)+qnorm(input$power))^2)*(((input$p1*(1-input$p1))/input$ratio)+input$p2*(1-input$p2)) / ((input$p1-input$p2)-input$dif)^2
+          temp5_n1<-temp5_n2*input$ratio
+          HTML( ("<P><PRE><font color=#000000 size=3 face=Times New Roman>&#8594; N  = "),ceiling(temp5_n1)+ceiling(temp5_n2),
                 ("<br>&#8594; n<sub>1 </sub>= "),ceiling(temp5_n1),
-                ("<br>&#8594; n<sub>2 </sub>= "),ceiling(temp5_n1),
+                ("<br>&#8594; n<sub>2 </sub>= "),ceiling(temp5_n2),
                 (".</font></P></PRE>") )
-    }
+        }
+        else if (input$type_binary==6) {
+          temp6_n2<-((qnorm(1-input$alpha)+qnorm(0.5+input$power/2))^2)*((input$p1*(1-input$p1)/input$ratio)+input$p2*(1-input$p2)) / (input$eq_limit-abs(input$p1-input$p2))^2
+          temp6_n1<-temp6_n2*input$ratio
+          HTML( ("<P><PRE><font color=#000000 size=3 face=Times New Roman>&#8594; N  = "),ceiling(temp6_n1)+ceiling(temp6_n2),
+                ("<br>&#8594; n<sub>1 </sub>= "),ceiling(temp6_n1),
+                ("<br>&#8594; n<sub>2 </sub>= "),ceiling(temp6_n2),
+                (".</font></P></PRE>") )
+        }
+        else if (input$type_binary==7) {
+          
+        }
     }
     })
     ### binary -> manual
@@ -184,7 +197,8 @@ shinyServer(
       if(input$data_type==1){
         if (input$type_binary==1) { 
           list(
-          HTML("<font color=#000000 face=Times New Roman><big><big>Two-sided Test for Equality (One-sample Proportion)</big></big></font>" ),br(),br(),br(),
+          HTML("<font color=#000000 face=Times New Roman><big><big>Two-sided Test for Equality (One-sample Proportion)</big></big></font>" ),br(),
+          HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 84-88.</font>" ),br(),br(),          
           HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),
           withMathJax( helpText(" $$ { H_0:\\theta-\\theta_0 =0 } $$" ) ),
           withMathJax( helpText(" $$ { H_0:\\theta-\\theta_0 \\neq0 } $$"  )),br(),
@@ -200,7 +214,8 @@ shinyServer(
         }
         else if (input$type_binary==2) {
           list(
-            HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Non-Inferiority/Superiority (One-sample Proportion)</big></big></font>" ),br(),br(),br(),
+            HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Non-Inferiority/Superiority (One-sample Proportion)</big></big></font>" ),br(),
+            HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 84-88.</font>" ),br(),br(),                 
             HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),
             withMathJax( helpText(" $${ H_0:\\theta-\\theta_0 \\le \\delta } $$" ) ),
             withMathJax( helpText(" $${ H_0:\\theta-\\theta_0 \\gt \\delta } $$" ) ),br(),
@@ -217,7 +232,8 @@ shinyServer(
         }
         else if (input$type_binary==3) {
           list(
-            HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Equivalence (One-sample Proportion)</big></big></font>" ),br(),br(),br(),
+            HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Equivalence (One-sample Proportion)</big></big></font>" ),br(),
+            HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 84-88.</font>" ),br(),br(),          
             HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),
             withMathJax( helpText(" $${ H_0:|\\theta-\\theta_0| \\ge\\delta } $$" ) ),
             withMathJax( helpText(" $${ H_0:|\\theta-\\theta_0| \\lt\\delta } $$" ) ),br(),
@@ -228,7 +244,7 @@ shinyServer(
             HTML("<font color=#000000 face=Times New Roman><big>1-&#946; : (Power) the probability of rejecting the false null hypothesis.</big></font>" ) ,br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>&theta; : Expected success proportion of sample.</big></font>" ),br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>&theta;<sub>0</sub> : Known success proportion of sample.</big></font>" ),br(),br(),
-            HTML("<font color=#000000 face=Times New Roman><big>&delta; : .</big></font>" ),br(),br(),
+            HTML("<font color=#000000 face=Times New Roman><big>&delta; : Equivalence limit.</big></font>" ),br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>N : Total sample size.</big></font><br><hr>" ) 
           )
         }
@@ -280,7 +296,8 @@ shinyServer(
         }
         else if (input$type_binary==5) {
           list(
-            HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Non-Inferiority/Superiority (Two-sample Proportion)</big></big></font>" ),br(),br(),br(),
+            HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Non-Inferiority/Superiority (Two-sample Proportion)</big></big></font>" ),br(),
+            HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 89-95.</font>" ),br(),br(),            
             HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),br(),
             withMathJax( helpText(" $${ H_0:\\theta_1-\\theta_2 \\le \\delta } $$" ) ),
             withMathJax( helpText(" $${ H_0:\\theta_1-\\theta_2 \\gt \\delta } $$" ) ),br(),
@@ -295,14 +312,15 @@ shinyServer(
             HTML("<font color=#000000 face=Times New Roman><big>&delta; : Equivalence limit.</big></font>" ),br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>n<sub>1</sub> : Sample size of sample one.</big></font>" ),br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>n<sub>2</sub> : Sample size of sample two.</big></font>" ),br(),br(),
-            HTML("<font color=#000000 face=Times New Roman><big>r : Allocation ratio (n<sub>1</sub> /n<sub>2</sub> ).</big></font><br><hr>" ),br(),br(),
+            HTML("<font color=#000000 face=Times New Roman><big>r : Allocation ratio (n<sub>1</sub> /n<sub>2</sub> ).</big></font>" ),br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>N : Total sample size.</big></font><br><hr>" )
             
             )
         }
         else if (input$type_binary==6) {
           list(
-            HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Equivalence (Two-sample Proportion)</big></big></font>" ),br(),br(),br(),
+            HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Equivalence (Two-sample Proportion)</big></big></font>" ),br(),
+            HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 89-95.</font>" ),br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),br(),
             withMathJax( helpText(" $${ H_0:|\\theta_1-\\theta_2| \\ge \\delta } $$" ) ),
             withMathJax( helpText(" $${ H_0:|\\theta_1-\\theta_2| \\lt \\delta } $$" ) ),br(),
@@ -314,10 +332,10 @@ shinyServer(
             HTML("<font color=#000000 face=Times New Roman><big>1-&#946; : (Power) the probability of rejecting the false null hypothesis.</big></font>" ) ,br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>&theta;<sub>1</sub> : Expected success proportions of sample one.</big></font>" ),br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>&theta;<sub>2</sub> : Expected success proportions of sample two.</big></font>" ),br(),br(),
-            HTML("<font color=#000000 face=Times New Roman><big>&delta; : .</big></font>" ),br(),br(),
+            HTML("<font color=#000000 face=Times New Roman><big>&delta; : Equivalence limit.</big></font>" ),br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>n<sub>1</sub> : Sample size of sample one.</big></font>" ),br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>n<sub>2</sub> : Sample size of sample two.</big></font>" ),br(),br(),
-                        HTML("<font color=#000000 face=Times New Roman><big>r : Allocation ratio (n<sub>1</sub> /n<sub>2</sub> ).</big></font><br><hr>" ),br(),br(),
+            HTML("<font color=#000000 face=Times New Roman><big>r : Allocation ratio (n<sub>1</sub> /n<sub>2</sub> ).</big></font>" ),br(),br(),
             HTML("<font color=#000000 face=Times New Roman><big>N : Total sample size.</big></font><br><hr>" )
           )
         }
@@ -425,7 +443,8 @@ shinyServer(
     if(input$data_type==2){
       if (input$type_quant==1) {
         list(
-          HTML("<font color=#000000 face=Times New Roman><big><big>Two-sided Test for Equality (One-sample Mean)</big></big></font>" ),br(),br(),br(),
+          HTML("<font color=#000000 face=Times New Roman><big><big>Two-sided Test for Equality (One-sample Mean)</big></big></font>" ),br(),
+          HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 50-57.</font>" ),br(),br(),          
           HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),
           withMathJax( helpText(" $$ { H_0:\\mu-\\mu_0 =0 } $$" ) ),
           withMathJax( helpText(" $$ { H_0:\\mu-\\mu_0 \\neq0 } $$"  )),br(),
@@ -442,7 +461,8 @@ shinyServer(
       }
       else if (input$type_quant==2) {
         list(
-          HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Non-Inferiority/Superiority (One-sample Mean)</big></big></font>" ),br(),br(),br(),
+          HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Non-Inferiority/Superiority (One-sample Mean)</big></big></font>" ),br(),
+          HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 50-57.</font>" ),br(),br(),           
           HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),
           withMathJax( helpText(" $$ { H_0:\\mu-\\mu_0 \\le\\delta } $$" ) ),
           withMathJax( helpText(" $$ { H_0:\\mu-\\mu_0 \\gt\\delta } $$"  )),br(),
@@ -460,7 +480,8 @@ shinyServer(
       }
       else if (input$type_quant==3) {
         list(
-          HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Equivalence (One-sample Mean)</big></big></font>" ),br(),br(),br(),
+          HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Equivalence (One-sample Mean)</big></big></font>" ),br(),
+          HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 50-57.</font>" ),br(),br(),          
           HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),
           withMathJax( helpText(" $$ { H_0:|\\mu-\\mu_0| \\ge\\delta } $$" ) ),
           withMathJax( helpText(" $$ { H_0:|\\mu-\\mu_0| \\lt\\delta } $$"  )),br(),
@@ -478,7 +499,8 @@ shinyServer(
       }
       else if (input$type_quant==4) {
         list(
-          HTML("<font color=#000000 face=Times New Roman><big><big>Two-sided Test for Equality (Two-sample Means)</big></big></font>" ),br(),br(),br(),
+          HTML("<font color=#000000 face=Times New Roman><big><big>Two-sided Test for Equality (Two-sample Means)</big></big></font>" ),br(),
+          HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 57-65.</font>" ),br(),br(),          
           HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),
           withMathJax( helpText(" $${ H_0:\\mu_1-\\mu_2 = 0 } $$" ) ),
           withMathJax( helpText(" $${ H_0:\\mu_1-\\mu_2 \\neq 0 } $$" ) ),br(),
@@ -501,7 +523,8 @@ shinyServer(
       }
       else if (input$type_quant==5) {
         list(
-          HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Non-Inferiority/Superiority (Two-sample Means)</big></big></font>" ),br(),br(),br(),
+          HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Non-Inferiority/Superiority (Two-sample Means)</big></big></font>" ),br(),
+          HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 57-65.</font>" ),br(),br(),          
           HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),
           withMathJax( helpText(" $${ H_0:\\mu_1-\\mu_2 \\le\\delta } $$" ) ),
           withMathJax( helpText(" $${ H_0:\\mu_1-\\mu_2 \\gt\\delta } $$" ) ),br(),
@@ -525,7 +548,8 @@ shinyServer(
       }
       else if (input$type_quant==6) {
         list(
-          HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Equivalence (Two-sample Means)</big></big></font>" ),br(),br(),br(),
+          HTML("<font color=#000000 face=Times New Roman><big><big>One-sided Test for Equivalence (Two-sample Means)</big></big></font>" ),br(),
+          HTML("<font color=#6C6C6C face=Times New Roman>Chow, Shao and Wang (2003). Sample Size Calculations In Clinical Research, 57-65.</font>" ),br(),br(),          
           HTML("<font color=#000000 face=Times New Roman><big><b>I. Hypothesis</b></big></font>" ),br(),
           withMathJax( helpText(" $${ H_0:|\\mu_1-\\mu_2| \\ge\\delta } $$" ) ),
           withMathJax( helpText(" $${ H_0:|\\mu_1-\\mu_2| \\lt\\delta } $$" ) ),br(),
